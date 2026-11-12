@@ -1,0 +1,8 @@
+---
+# Default variables for the todo_app role (can be overridden in the playbook/inventory)
+app_name: todo-api
+app_port: 8080
+app_dir: /opt/todo-api
+app_user: todoapp
+java_package: openjdk-17-jre-headless
+app_message: "Hello from todo-api, deployed by Ansible"

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-api-config
+  labels:
+    app: todo-api
+data:
+  # Read by Spring Boot as environment variables (see application.properties)
+  APP_PORT: "8080"
+  APP_MESSAGE: "Hello from todo-api on Kubernetes"

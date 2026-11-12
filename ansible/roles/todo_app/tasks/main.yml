@@ -1,0 +1,42 @@
+---
+- name: Install the Java runtime
+  ansible.builtin.apt:
+    name: "{{ java_package }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create the application user
+  ansible.builtin.user:
+    name: "{{ app_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Create the application directory
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    mode: "0755"
+
+- name: Copy the built JAR to the server
+  ansible.builtin.copy:
+    src: "{{ app_jar }}"
+    dest: "{{ app_dir }}/{{ app_name }}.jar"
+    owner: "{{ app_user }}"
+    mode: "0644"
+  notify: Restart todo-api
+
+- name: Install the service script
+  ansible.builtin.template:
+    src: todo-api.init.j2
+    dest: "/etc/init.d/{{ app_name }}"
+    mode: "0755"
+  notify: Restart todo-api
+
+- name: Make sure the service is running
+  ansible.builtin.service:
+    name: "{{ app_name }}"
+    state: started
+    use: sysvinit

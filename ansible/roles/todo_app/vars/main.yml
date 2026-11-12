@@ -1,0 +1,4 @@
+---
+# Internal variables (higher precedence than defaults)
+app_log: "{{ app_dir }}/{{ app_name }}.log"
+app_pidfile: "/var/run/{{ app_name }}.pid"
