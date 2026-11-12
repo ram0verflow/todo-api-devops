@@ -1,0 +1,28 @@
+---
+- name: Configure the todo-api application server
+  hosts: appservers
+  become: true
+
+  vars:
+    # Path to the JAR built by Maven in Component 1
+    app_jar: "{{ playbook_dir }}/../target/todo-api-1.0.0.jar"
+    app_message: "Hello from todo-api, deployed by Ansible"
+
+  roles:
+    - todo_app
+
+  post_tasks:
+    - name: Wait for the app to listen on {{ app_port }}
+      ansible.builtin.wait_for:
+        port: "{{ app_port }}"
+        timeout: 90
+
+    - name: Check the app responds
+      ansible.builtin.uri:
+        url: "http://localhost:{{ app_port }}/"
+        return_content: true
+      register: app_response
+
+    - name: Show the response
+      ansible.builtin.debug:
+        msg: "{{ app_response.json }}"

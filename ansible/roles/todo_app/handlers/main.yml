@@ -1,0 +1,7 @@
+---
+# Runs only when the JAR or the service script actually changed
+- name: Restart todo-api
+  ansible.builtin.service:
+    name: "{{ app_name }}"
+    state: restarted
+    use: sysvinit
