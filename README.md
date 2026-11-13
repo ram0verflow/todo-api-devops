@@ -31,19 +31,24 @@ curl localhost:8080/todos
 
 ```bash
 # Ansible: configure a Docker container acting as a server
+# --init gives the container a real PID 1 so the handler's service restart works
 docker build -t ansible-target ansible/target-host
-docker run -d --name appserver -p 8081:8080 ansible-target
-cd ansible && ansible-playbook -i inventory.ini playbook.yml
+docker run -d --init --name appserver -p 8081:8080 ansible-target
+ansible-galaxy collection install community.docker
+cd ansible && ansible-playbook -i inventory.ini playbook.yml   # run twice: 2nd run changed=0
+curl localhost:8081/
 
 # Docker (multi-stage) + Kubernetes on minikube
-minikube start
-eval $(minikube docker-env)
 docker build -t todo-api:1.0 .
+docker run -d -p 8082:8080 todo-api:1.0 && curl localhost:8082/
+minikube start --driver=docker
+minikube image load todo-api:1.0
 kubectl apply -f k8s/
 kubectl get pods -l app=todo-api
 kubectl scale deployment todo-api --replicas=5
-minikube service todo-api-service --url
+minikube ssh -- curl -s localhost:30080/
 ```
 
 Enhancements: multi-stage Dockerfile, ConfigMap for settings, liveness/readiness probes, rollback
-(`kubectl set image deployment/todo-api todo-api=todo-api:broken` then `kubectl rollout undo deployment/todo-api`).
+(`kubectl set env deployment/todo-api APP_PORT=9999` makes the new pod fail its probes, then
+`kubectl rollout undo deployment/todo-api`).
